@@ -1,6 +1,8 @@
 package com.example.alumnomodelolist.Maestro.Auto;
 
-public class AutoModel {
+import io.realm.RealmObject;
+
+public class AutoModel extends RealmObject {
     private String marca;
     private String modelo;
     private int anio;

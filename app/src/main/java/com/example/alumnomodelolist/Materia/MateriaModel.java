@@ -1,6 +1,8 @@
 package com.example.alumnomodelolist.Materia;
 
-public class MateriaModel {
+import io.realm.RealmObject;
+
+public class MateriaModel extends RealmObject {
 
     private String nombre;
     private int horas;

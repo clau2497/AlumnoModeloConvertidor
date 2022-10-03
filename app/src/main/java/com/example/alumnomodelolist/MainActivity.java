@@ -6,6 +6,12 @@ import android.os.Bundle;
 
 import com.example.alumnomodelolist.Alumno.Alumno;
 import com.example.alumnomodelolist.Alumno.AlumnoModel;
+import com.example.alumnomodelolist.Animal.AnimalDAO;
+import com.example.alumnomodelolist.Animal.Animal;
+import com.example.alumnomodelolist.Animal.Juguetes;
+import com.example.alumnomodelolist.Casa.Casa;
+import com.example.alumnomodelolist.Casa.CasaDAO;
+import com.example.alumnomodelolist.Casa.Habitaciones;
 import com.example.alumnomodelolist.Maestro.Auto.Auto;
 import com.example.alumnomodelolist.Maestro.Auto.AutoModel;
 import com.example.alumnomodelolist.Maestro.Maestro;
@@ -13,9 +19,12 @@ import com.example.alumnomodelolist.Maestro.MaestroModel;
 import com.example.alumnomodelolist.Materia.Materia;
 import com.example.alumnomodelolist.Materia.MateriaModel;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +32,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Realm.init(this);
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                .deleteRealmIfMigrationNeeded()
+                .build();
+        Realm.setDefaultConfiguration(config);
+
+        llenarAnimal();
+        llenarCasa();
+
 
         List<Materia> modelMateriasJuanito = new ArrayList<>();
         modelMateriasJuanito.add(new Materia("Español", 8));
@@ -74,27 +92,75 @@ public class MainActivity extends AppCompatActivity {
         //en lugar alumno va a ser alumno model en la impresion
 
     }
+    //gUARDAR DATOS
+    public void llenarAnimal(){
+        List<Juguetes> juguetesListRufis = new ArrayList<>();
+        juguetesListRufis.add(new Juguetes("Pelota", "Caucho"));
+        juguetesListRufis.add(new Juguetes("Hueso", "Carnaza"));
+        juguetesListRufis.add(new Juguetes("Modedera", "Plastico"));
 
-    private List<AlumnoModel> convertidorAlumnotoAlumnoModelMaestro(List<Alumno> listAlumno) {
-        List<AlumnoModel> alumnoModelList = new ArrayList<>();
+        List<Juguetes> juguetesListBenji = new ArrayList<>();
+        juguetesListBenji.add(new Juguetes("Peluche Pizza", "Tela"));
+        juguetesListBenji.add(new Juguetes("Pollo", "Plastico"));
+        juguetesListBenji.add(new Juguetes("Pescado", "Plastico"));
+
+        List<Animal> animalLista = new ArrayList<>();
+        animalLista.add(new Animal("Rufis", "Snachauzer", juguetesListRufis));
+        animalLista.add(new Animal("Bengi", "Unica", juguetesListBenji));
+
+        AnimalDAO.addAll(animalLista);
+    }
+        public void llenarCasa(){
+        List<Habitaciones> habitacionCocina = new ArrayList<>();
+        habitacionCocina.add(new Habitaciones("Cocina", "Estufa"));
+        habitacionCocina.add(new Habitaciones("Cocina", "Horno de microondas"));
+
+        List<Casa> casaLista = new ArrayList<>();
+        casaLista.add(new Casa("Rizos",621, habitacionCocina));
+
+            CasaDAO.addAll(casaLista);
+    }
+
+
+
+
+    public static List<Alumno> addAll(List<Alumno> modeloAlumno) {
+        Realm realm;
+        realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        List<AlumnoModel> modeloRealm ;
+        modeloRealm = convertidorAlumnotoAlumnoModelMaestro(modeloAlumno);
+        List<AlumnoModel> models;
+        models = realm.copyToRealm(modeloRealm );
+        realm.commitTransaction();
+        //realm.close();
+       List<Alumno> modeloResponde = null;
+        return modeloResponde;
+    }
+    //modelo persona que guarde
+
+    private static List<AlumnoModel>  convertidorAlumnotoAlumnoModelMaestro(List<Alumno> listAlumno) {
+
+        RealmList<AlumnoModel> alumnoModelrealmLista = new RealmList<>();
         for (Alumno listaAlumnos : listAlumno) {
             AlumnoModel alumnoModel = new AlumnoModel();
             alumnoModel.setNombre(listaAlumnos.getNombre());
             alumnoModel.setEdad(listaAlumnos.getEdad());
             alumnoModel.setGrupo(listaAlumnos.getGrupo());
-            List<MaestroModel> listMaestroModel = new ArrayList<>();
+
+            RealmList<MaestroModel> listMaestroModel = new RealmList<>();
             for (Maestro listaMaestro : listaAlumnos.getMaestroModelList()) {
                 MaestroModel maestroModel = new MaestroModel();
                 maestroModel.setNombre(listaMaestro.getNombre());
                 maestroModel.setEspecialidad(listaMaestro.getEspecialidad());
                 maestroModel.setEdad(listaMaestro.getEdad());
-                List<AutoModel> listAutoModel = new ArrayList<>();
+
+                RealmList<AutoModel> listAutoModel = new RealmList<>();
                 for (Auto listaAuto : listaMaestro.getAutoList()) {
                     AutoModel autoModel = new AutoModel();
                     autoModel.setModelo(listaAuto.getModelo());
                     autoModel.setAnio(listaAuto.getAnio());
                     autoModel.setMarca(listaAuto.getMarca());
-                   // System.out.println("Alumno" + listaAlumnos.getNombre() +);
                     listAutoModel.add(autoModel);
                 }
                 maestroModel.setAutoListModel(listAutoModel);
@@ -103,17 +169,20 @@ public class MainActivity extends AppCompatActivity {
             }
             alumnoModel.setMaestroModelList(listMaestroModel);
 
-            List<MateriaModel> listMateriaModel = new ArrayList<>();
+            RealmList<MateriaModel> listMateriaModel = new RealmList<>();
             for (Materia listaMateria : listaAlumnos.getMateriaModelList()) {
                 MateriaModel materiaModel = new MateriaModel();
                 materiaModel.setNombre(listaMateria.getNombre());
                 materiaModel.setHoras(listaMateria.getHoras());
                 listMateriaModel.add(materiaModel);
             }
+            //agregar toda la lista completa
             alumnoModel.setMateriaModelList(listMateriaModel);
+          //agregar elementos a una lista con .add, elemento por elemento
 
         }
-        return alumnoModelList;
+
+        return alumnoModelrealmLista;
     }
 //lista materias igual a mismo nivel de maestro
 

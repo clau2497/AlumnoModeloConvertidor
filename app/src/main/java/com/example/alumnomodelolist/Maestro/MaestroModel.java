@@ -5,19 +5,22 @@ import com.example.alumnomodelolist.Maestro.Auto.AutoModel;
 
 import java.util.List;
 
-public class MaestroModel {
+import io.realm.RealmList;
+import io.realm.RealmObject;
+
+public class MaestroModel extends RealmObject {
     private String nombre;
     private String edad;
     private String especialidad;
 
-    List<AutoModel> autoListModel;
+    RealmList<AutoModel> autoListModel;
+
+    public void setAutoListModel(RealmList<AutoModel> autoListModel) {
+        this.autoListModel = autoListModel;
+    }
 
     public List<AutoModel> getAutoListModel() {
         return autoListModel;
-    }
-
-    public void setAutoListModel(List<AutoModel> autoListModel) {
-        this.autoListModel = autoListModel;
     }
 
     public String getNombre() {
